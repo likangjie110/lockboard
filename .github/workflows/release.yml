@@ -65,7 +65,7 @@ jobs:
           version: '5.15.2'
           arch: ${{ matrix.config.qt_arch }}
           cache: true
-          tools: 'tools_mingw90'
+          tools: ${{ runner.os == 'Windows' && 'tools_mingw90' || '' }}
 
       # ===== Windows 构建 =====
       - name: Build Windows
