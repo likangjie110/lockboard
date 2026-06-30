@@ -28,7 +28,7 @@ jobs:
             
           # Linux x64 (AppImage)
           - name: Linux x64 AppImage
-            os: ubuntu-20.04
+            os: ubuntu-latest
             arch: gcc_64
             qt_arch: gcc_64
             output_pattern: |
@@ -37,7 +37,7 @@ jobs:
             
           # Linux ARM64 (交叉编译)
           - name: Linux ARM64
-            os: ubuntu-20.04
+            os: ubuntu-latest
             arch: arm64_cross
             qt_arch: gcc_64  # 使用主机 Qt 进行交叉编译
             output_pattern: |
@@ -46,7 +46,7 @@ jobs:
             
           # Linux ARMv7 (交叉编译)
           - name: Linux ARMv7
-            os: ubuntu-20.04
+            os: ubuntu-latest
             arch: armv7_cross
             qt_arch: gcc_64
             output_pattern: |
