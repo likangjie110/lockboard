@@ -65,7 +65,7 @@ jobs:
           version: '5.15.2'
           arch: ${{ matrix.config.qt_arch }}
           cache: true
-          tools: 'tools_mingw,qt.tools.win64_mingw810,1.0-0-202006261533'
+          tools: 'tools_mingw90'
 
       # ===== Windows 构建 =====
       - name: Build Windows
