@@ -59,8 +59,8 @@ win32 {
     # Windows 可执行文件保持在 release 目录
     DESTDIR = release
     
-    # 应用程序图标（需要创建 resources/app.rc）
-    RC_ICONS = resources/lockboard.ico
+    # 应用程序图标（如果图标文件存在才设置）
+    # RC_ICONS = resources/lockboard.ico
     
     # 版本信息
     QMAKE_TARGET_COMPANY = "LockBoard Project"
