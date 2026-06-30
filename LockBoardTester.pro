@@ -49,15 +49,15 @@ CONFIG(release, debug|release) {
     
     # 去除调试符号
     QMAKE_LFLAGS_RELEASE += -s
-    
-    # Windows 平台禁用控制台窗口
-    win32: CONFIG += windows
 }
 
 # Windows 平台配置
 win32 {
     # Windows 可执行文件保持在 release 目录
     DESTDIR = release
+    
+    # Windows GUI 应用（不显示控制台）
+    CONFIG += windows
     
     # 应用程序图标（如果图标文件存在才设置）
     # RC_ICONS = resources/lockboard.ico
