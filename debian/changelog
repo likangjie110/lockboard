@@ -1,0 +1,17 @@
+lockboard-tester (1.0.0-1) unstable; urgency=medium
+
+  * 初始版本发布
+  * 支持全部 9 种协议命令
+  * 12 路锁状态可视化
+  * 调试控制台日志功能
+  * 支持多板卡级联（地址 1-15）
+
+ -- LockBoard Development Team <dev@example.com>  Tue, 30 Jun 2026 13:00:00 +0800
+
+lockboard-tester (0.9.0-1) unstable; urgency=low
+
+  * Beta 测试版本
+  * 实现基础功能
+  * 完成协议封装
+
+ -- LockBoard Development Team <dev@example.com>  Mon, 29 Jun 2026 10:00:00 +0800

@@ -1,0 +1,44 @@
+# udev 规则：为 USB 转串口设备自动配置权限
+# 文件位置：/etc/udev/rules.d/99-lockboard.rules
+# 安装方法：sudo cp 99-lockboard.rules /etc/udev/rules.d/
+# 重载规则：sudo udevadm control --reload-rules && sudo udevadm trigger
+
+# CH340/CH341 系列芯片（常见国产 USB 转串口）
+# 厂商 ID: 1a86, 设备 ID: 7523 (CH340), 5523 (CH341)
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", MODE="0666", GROUP="dialout", SYMLINK+="lockboard_ch340"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="5523", MODE="0666", GROUP="dialout", SYMLINK+="lockboard_ch341"
+
+# CP210x 系列芯片（Silicon Labs）
+# 厂商 ID: 10c4, 设备 ID: ea60 (CP2102), ea70 (CP2105), ea71 (CP2108)
+SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", MODE="0666", GROUP="dialout", SYMLINK+="lockboard_cp2102"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea70", MODE="0666", GROUP="dialout", SYMLINK+="lockboard_cp2105"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea71", MODE="0666", GROUP="dialout", SYMLINK+="lockboard_cp2108"
+
+# FT232 系列芯片（FTDI）
+# 厂商 ID: 0403, 设备 ID: 6001 (FT232BM/FT232AM/FT232R), 6010 (FT2232), 6011 (FT4232), 6014 (FT232H)
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE="0666", GROUP="dialout", SYMLINK+="lockboard_ft232"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", MODE="0666", GROUP="dialout", SYMLINK+="lockboard_ft2232"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6011", MODE="0666", GROUP="dialout", SYMLINK+="lockboard_ft4232"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", MODE="0666", GROUP="dialout", SYMLINK+="lockboard_ft232h"
+
+# PL2303 系列芯片（Prolific）
+# 厂商 ID: 067b, 设备 ID: 2303 (PL2303), 23c3 (PL2303GC), 23d3 (PL2303GB), 23f3 (PL2303GT)
+SUBSYSTEM=="tty", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303", MODE="0666", GROUP="dialout", SYMLINK+="lockboard_pl2303"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="23c3", MODE="0666", GROUP="dialout", SYMLINK+="lockboard_pl2303gc"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="23d3", MODE="0666", GROUP="dialout", SYMLINK+="lockboard_pl2303gb"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="23f3", MODE="0666", GROUP="dialout", SYMLINK+="lockboard_pl2303gt"
+
+# 通用规则：为所有 USB CDC ACM 设备设置权限
+SUBSYSTEM=="tty", ATTRS{bInterfaceClass}=="02", ATTRS{bInterfaceSubClass}=="02", MODE="0666", GROUP="dialout"
+
+# 权限说明：
+# MODE="0666" - 允许所有用户读写（rw-rw-rw-）
+# GROUP="dialout" - 设备所属组为 dialout（某些发行版使用 uucp）
+# SYMLINK+="..." - 创建符号链接方便识别设备类型
+
+# 使用方法：
+# 1. 安装规则后，USB 转串口设备会自动获得访问权限
+# 2. 符号链接位于 /dev/ 目录，例如 /dev/lockboard_ch340
+# 3. 可以通过符号链接直接访问设备，无需记忆 ttyUSB* 编号
+# 4. 如果仍无权限，确认用户在 dialout 组中：groups $USER
+# 5. 添加用户到组：sudo usermod -aG dialout $USER（需要注销重新登录）

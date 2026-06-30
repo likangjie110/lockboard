@@ -1,0 +1,25 @@
+# Qt 编译产物
+*.o
+moc_*.cpp
+moc_*.o
+ui_*.h
+Makefile
+LockBoardTester
+*.exe
+*.app
+
+# Qt Creator 配置
+.qtc_clangd/
+.qtcreator/
+
+# 临时文件
+*.user
+.qmake.stash
+object_script.*
+
+# 调试文件
+moc_predefs.h
+
+# 平台特定
+.DS_Store
+Thumbs.db

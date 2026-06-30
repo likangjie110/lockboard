@@ -1,0 +1,44 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	qmake LockBoardTester.pro CONFIG+=release PREFIX=/usr
+
+override_dh_auto_build:
+	make
+
+override_dh_auto_install:
+	mkdir -p debian/lockboard-tester/usr/bin
+	mkdir -p debian/lockboard-tester/usr/share/applications
+	mkdir -p debian/lockboard-tester/usr/share/icons/hicolor/256x256/apps
+	mkdir -p debian/lockboard-tester/usr/share/pixmaps
+	mkdir -p debian/lockboard-tester/usr/share/doc/lockboard-tester
+	
+	# 安装可执行文件
+	install -m 0755 release/LockBoardTester debian/lockboard-tester/usr/bin/lockboard-tester
+	
+	# 创建桌面文件
+	cat > debian/lockboard-tester/usr/share/applications/lockboard-tester.desktop << 'EOF'
+	[Desktop Entry]
+	Type=Application
+	Name=LockBoard Tester
+	Name[zh_CN]=485锁控板测试工具
+	Comment=RS485 Lock Control Board Communication Tester
+	Comment[zh_CN]=RS485锁控板通讯测试工具
+	Exec=lockboard-tester
+	Icon=lockboard-tester
+	Categories=Development;Utility;Electronics;
+	Terminal=false
+	Keywords=RS485;Serial;Lock;Testing;
+	EOF
+	
+	# 安装文档
+	cp README.md debian/lockboard-tester/usr/share/doc/lockboard-tester/
+	[ -f docs/troubleshooting-linux.md ] && cp docs/troubleshooting-linux.md debian/lockboard-tester/usr/share/doc/lockboard-tester/ || true
+
+override_dh_auto_clean:
+	make clean || true
+	rm -f Makefile*
+	dh_clean
