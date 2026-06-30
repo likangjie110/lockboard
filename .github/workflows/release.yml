@@ -26,16 +26,6 @@ jobs:
               dist/**/*
             artifact_name: LockBoardTester-Windows-x64.exe
             
-          # Windows 32-bit (MinGW)
-          - name: Windows x86
-            os: windows-latest
-            arch: win32_mingw81
-            qt_arch: win32_mingw81
-            output_pattern: |
-              LockBoardTester.exe
-              dist/**/*
-            artifact_name: LockBoardTester-Windows-x86.exe
-            
           # Linux x64 (AppImage)
           - name: Linux x64 AppImage
             os: ubuntu-20.04
@@ -75,7 +65,7 @@ jobs:
           version: '5.15.2'
           arch: ${{ matrix.config.qt_arch }}
           cache: true
-          tools: 'tools_mingw,qt.tools.win64_mingw810,1.0-0-202006261533 tools_mingw,qt.tools.win32_mingw810,1.0-0-202006261533'
+          tools: 'tools_mingw,qt.tools.win64_mingw810,1.0-0-202006261533'
 
       # ===== Windows 构建 =====
       - name: Build Windows
