@@ -1,0 +1,60 @@
+name: Build Test
+
+on:
+  pull_request:
+    branches: [ main, dev ]
+  push:
+    branches: [ dev ]
+
+jobs:
+  test-build:
+    name: Test Build - ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: Windows x64
+            os: windows-latest
+            qt_arch: win64_mingw
+            
+          - name: Linux x64
+            os: ubuntu-20.04
+            qt_arch: gcc_64
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '5.15.2'
+          arch: ${{ matrix.config.qt_arch }}
+          cache: true
+
+      - name: Build Windows
+        if: runner.os == 'Windows'
+        run: |
+          qmake LockBoardTester.pro
+          mingw32-make -j4
+        shell: pwsh
+
+      - name: Build Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxcb-xinerama0 libxcb-cursor0 libgl1-mesa-dev
+          qmake LockBoardTester.pro
+          make -j$(nproc)
+
+      - name: Verify Build
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            test -f "release/LockBoardTester.exe" || test -f "LockBoardTester.exe" || exit 1
+            echo "✅ Windows 构建成功"
+          else
+            test -f "LockBoardTester" || exit 1
+            echo "✅ Linux 构建成功"
+          fi
+        shell: bash

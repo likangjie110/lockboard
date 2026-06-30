@@ -3,6 +3,8 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-blue)](https://github.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Qt](https://img.shields.io/badge/Qt-5.15.2-brightgreen)](https://www.qt.io/)
+[![Release](https://img.shields.io/github/v/release/YOUR_USERNAME/lockBoard)](https://github.com/YOUR_USERNAME/lockBoard/releases)
+[![Build](https://img.shields.io/github/actions/workflow/status/YOUR_USERNAME/lockBoard/release.yml)](https://github.com/YOUR_USERNAME/lockBoard/actions)
 
 [English](README_EN.md) | 简体中文
 
@@ -29,6 +31,25 @@
 | ✅ Windows | 完全支持 | Windows 10/11，预编译可执行文件 |
 | ✅ Linux | 完全支持 | Ubuntu/Debian/Fedora/Arch，需从源码编译 |
 | ⚠️ macOS | 理论支持 | 未测试，需自行编译 |
+
+## 📥 下载
+
+### 预编译版本
+
+访问 [Releases 页面](https://github.com/YOUR_USERNAME/lockBoard/releases) 下载最新版本：
+
+| 平台 | 文件 | 推荐用户 |
+|------|------|----------|
+| **Windows 64位** | `LockBoardTester-Windows-x64.exe` | ✅ 推荐：现代 Windows 10/11 系统 |
+| **Windows 32位** | `LockBoardTester-Windows-x86.exe` | 老旧 32 位系统 |
+| **Linux x64** | `LockBoardTester-Linux-x86_64.AppImage` | 标准 Linux 发行版（无需安装） |
+| **Linux ARM64** | `LockBoardTester-Linux-arm64` | 树莓派 4、Jetson Nano 等 |
+| **Linux ARMv7** | `LockBoardTester-Linux-armv7` | 树莓派 3 等 |
+
+**使用方法**：
+- **Windows**: 下载 `.exe` 文件，双击运行
+- **Linux AppImage**: `chmod +x *.AppImage && ./*.AppImage`
+- **Linux ARM**: `chmod +x LockBoardTester-* && ./LockBoardTester-*`
 
 ### Linux 快速开始
 

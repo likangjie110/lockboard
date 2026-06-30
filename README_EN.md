@@ -3,6 +3,8 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-blue)](https://github.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Qt](https://img.shields.io/badge/Qt-5.15.2-brightgreen)](https://www.qt.io/)
+[![Release](https://img.shields.io/github/v/release/YOUR_USERNAME/lockBoard)](https://github.com/YOUR_USERNAME/lockBoard/releases)
+[![Build](https://img.shields.io/github/actions/workflow/status/YOUR_USERNAME/lockBoard/release.yml)](https://github.com/YOUR_USERNAME/lockBoard/actions)
 
 English | [简体中文](README.md)
 
@@ -29,6 +31,25 @@ RS485 lock board communication testing tool based on Qt 5.15.2, supporting 12-ch
 | ✅ Windows | Fully Supported | Windows 10/11, pre-compiled executable |
 | ✅ Linux | Fully Supported | Ubuntu/Debian/Fedora/Arch, build from source |
 | ⚠️ macOS | Theoretical Support | Untested, requires manual build |
+
+## 📥 Download
+
+### Pre-compiled Binaries
+
+Visit the [Releases page](https://github.com/YOUR_USERNAME/lockBoard/releases) to download the latest version:
+
+| Platform | File | Recommended For |
+|----------|------|-----------------|
+| **Windows 64-bit** | `LockBoardTester-Windows-x64.exe` | ✅ Recommended: Modern Windows 10/11 systems |
+| **Windows 32-bit** | `LockBoardTester-Windows-x86.exe` | Legacy 32-bit systems |
+| **Linux x64** | `LockBoardTester-Linux-x86_64.AppImage` | Standard Linux distributions (no installation required) |
+| **Linux ARM64** | `LockBoardTester-Linux-arm64` | Raspberry Pi 4, Jetson Nano, etc. |
+| **Linux ARMv7** | `LockBoardTester-Linux-armv7` | Raspberry Pi 3, etc. |
+
+**Usage**:
+- **Windows**: Download `.exe` file and double-click to run
+- **Linux AppImage**: `chmod +x *.AppImage && ./*.AppImage`
+- **Linux ARM**: `chmod +x LockBoardTester-* && ./LockBoardTester-*`
 
 ### Linux Quick Start
 

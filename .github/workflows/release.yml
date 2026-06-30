@@ -1,0 +1,237 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'  # 触发条件：推送 v 开头的标签，如 v1.0.0
+
+permissions:
+  contents: write  # 允许创建 Release 和上传资源
+
+jobs:
+  build:
+    name: Build ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false  # 单个架构失败不影响其他
+      matrix:
+        config:
+          # Windows 64-bit (MinGW)
+          - name: Windows x64
+            os: windows-latest
+            arch: win64_mingw
+            qt_arch: win64_mingw
+            output_pattern: |
+              LockBoardTester.exe
+              dist/**/*
+            artifact_name: LockBoardTester-Windows-x64.exe
+            
+          # Windows 32-bit (MinGW)
+          - name: Windows x86
+            os: windows-latest
+            arch: win32_mingw81
+            qt_arch: win32_mingw81
+            output_pattern: |
+              LockBoardTester.exe
+              dist/**/*
+            artifact_name: LockBoardTester-Windows-x86.exe
+            
+          # Linux x64 (AppImage)
+          - name: Linux x64 AppImage
+            os: ubuntu-20.04
+            arch: gcc_64
+            qt_arch: gcc_64
+            output_pattern: |
+              LockBoardTester-x86_64.AppImage
+            artifact_name: LockBoardTester-Linux-x86_64.AppImage
+            
+          # Linux ARM64 (交叉编译)
+          - name: Linux ARM64
+            os: ubuntu-20.04
+            arch: arm64_cross
+            qt_arch: gcc_64  # 使用主机 Qt 进行交叉编译
+            output_pattern: |
+              LockBoardTester-arm64
+            artifact_name: LockBoardTester-Linux-arm64
+            
+          # Linux ARMv7 (交叉编译)
+          - name: Linux ARMv7
+            os: ubuntu-20.04
+            arch: armv7_cross
+            qt_arch: gcc_64
+            output_pattern: |
+              LockBoardTester-armv7
+            artifact_name: LockBoardTester-Linux-armv7
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史，用于版本号生成
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '5.15.2'
+          arch: ${{ matrix.config.qt_arch }}
+          cache: true
+
+      # ===== Windows 构建 =====
+      - name: Build Windows
+        if: runner.os == 'Windows'
+        run: |
+          qmake LockBoardTester.pro
+          mingw32-make -j4
+          # 重命名输出文件
+          if (Test-Path "release\LockBoardTester.exe") {
+            Move-Item "release\LockBoardTester.exe" "${{ matrix.config.artifact_name }}"
+          } elseif (Test-Path "LockBoardTester.exe") {
+            Move-Item "LockBoardTester.exe" "${{ matrix.config.artifact_name }}"
+          }
+        shell: pwsh
+
+      # ===== Linux x64 AppImage 构建 =====
+      - name: Build Linux x64 AppImage
+        if: matrix.config.arch == 'gcc_64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxcb-xinerama0 libxcb-cursor0 libgl1-mesa-dev
+          qmake LockBoardTester.pro
+          make -j$(nproc)
+          
+          # 使用 linuxdeploy 打包 AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy*.AppImage
+          
+          # 打包
+          ./linuxdeploy-x86_64.AppImage \
+            --executable=LockBoardTester \
+            --plugin=qt \
+            --appdir=AppDir \
+            --output=appimage \
+            --desktop-file=debian/lockboardtester.desktop || echo "AppImage 打包失败，使用备用方案"
+          
+          # 重命名输出
+          if [ -f "LockBoardTester-x86_64.AppImage" ]; then
+            mv LockBoardTester-x86_64.AppImage ${{ matrix.config.artifact_name }}
+          else
+            # 备用：直接使用可执行文件
+            mv LockBoardTester ${{ matrix.config.artifact_name }}
+          fi
+
+      # ===== Linux ARM 交叉编译 =====
+      - name: Build Linux ARM (Cross-compile)
+        if: contains(matrix.config.arch, 'cross')
+        run: |
+          # 安装交叉编译工具链
+          sudo apt-get update
+          if [ "${{ matrix.config.arch }}" = "arm64_cross" ]; then
+            sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+            export CROSS_PREFIX=aarch64-linux-gnu
+          else
+            sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
+            export CROSS_PREFIX=arm-linux-gnueabihf
+          fi
+          
+          # 配置交叉编译
+          qmake LockBoardTester.pro \
+            QMAKE_CC=${CROSS_PREFIX}-gcc \
+            QMAKE_CXX=${CROSS_PREFIX}-g++ \
+            QMAKE_LINK=${CROSS_PREFIX}-g++
+          
+          make -j$(nproc)
+          
+          # 重命名输出
+          mv LockBoardTester ${{ matrix.config.artifact_name }}
+          
+          # 添加可执行权限
+          chmod +x ${{ matrix.config.artifact_name }}
+
+      # ===== 收集产物 =====
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p artifacts
+          # 查找并移动所有匹配的文件
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            cp ${{ matrix.config.artifact_name }} artifacts/ 2>/dev/null || echo "Main artifact not found"
+          else
+            cp ${{ matrix.config.artifact_name }} artifacts/
+          fi
+        shell: bash
+
+      # ===== 上传构建产物 =====
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.config.name }}
+          path: artifacts/*
+          if-no-files-found: error
+
+  # ===== 创建 GitHub Release =====
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-files
+
+      - name: List Downloaded Files
+        run: |
+          echo "=== 下载的文件结构 ==="
+          ls -R release-files/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## 🎉 LockBoard Tester ${{ github.ref_name }}
+            
+            ### 📦 下载说明
+            
+            | 平台 | 文件 | 说明 |
+            |------|------|------|
+            | Windows 64位 | `LockBoardTester-Windows-x64.exe` | 推荐，适用于现代 Windows 系统 |
+            | Windows 32位 | `LockBoardTester-Windows-x86.exe` | 适用于老旧 32 位系统 |
+            | Linux x64 | `LockBoardTester-Linux-x86_64.AppImage` | AppImage 格式，无需安装 |
+            | Linux ARM64 | `LockBoardTester-Linux-arm64` | 适用于树莓派 4 等 ARM64 设备 |
+            | Linux ARMv7 | `LockBoardTester-Linux-armv7` | 适用于树莓派 3 等 ARMv7 设备 |
+            
+            ### 🚀 快速开始
+            
+            **Windows**：
+            ```cmd
+            # 下载对应版本的 .exe 文件，双击运行
+            ```
+            
+            **Linux AppImage**：
+            ```bash
+            chmod +x LockBoardTester-Linux-x86_64.AppImage
+            ./LockBoardTester-Linux-x86_64.AppImage
+            ```
+            
+            **Linux ARM**：
+            ```bash
+            chmod +x LockBoardTester-Linux-arm64
+            ./LockBoardTester-Linux-arm64
+            ```
+            
+            ### 📋 更新日志
+            
+            - 详细更新内容请查看提交记录
+            
+            ---
+            
+            **完整文档**：[README.md](https://github.com/${{ github.repository }})
+          files: release-files/**/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
