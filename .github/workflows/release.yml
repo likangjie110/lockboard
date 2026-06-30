@@ -80,8 +80,31 @@ jobs:
       - name: Build Windows
         if: runner.os == 'Windows'
         run: |
-          qmake LockBoardTester.pro
+          # 设置 PATH，确保使用 Qt 自带的 MinGW 而不是系统 MinGW
+          $QtPath = (Get-Item env:Qt5_DIR).Value
+          $QtBin = Join-Path $QtPath "bin"
+          
+          # 查找 Qt Tools 中的 MinGW
+          $QtRoot = Split-Path (Split-Path $QtPath -Parent) -Parent
+          if ("${{ matrix.config.qt_arch }}" -eq "win64_mingw81") {
+            $MinGW = Join-Path $QtRoot "Tools\mingw810_64\bin"
+          } else {
+            $MinGW = Join-Path $QtRoot "Tools\mingw810_32\bin"
+          }
+          
+          # 优先使用 Qt 的 MinGW
+          $env:PATH = "$MinGW;$QtBin;$env:PATH"
+          
+          Write-Host "Qt Path: $QtPath"
+          Write-Host "MinGW Path: $MinGW"
+          Write-Host "=== Tool versions ==="
+          qmake -v
+          g++ --version
+          
+          # 编译
+          qmake LockBoardTester.pro CONFIG+=release
           mingw32-make -j4
+          
           # 重命名输出文件
           if (Test-Path "release\LockBoardTester.exe") {
             Move-Item "release\LockBoardTester.exe" "${{ matrix.config.artifact_name }}"
