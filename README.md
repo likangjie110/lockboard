@@ -242,6 +242,111 @@ mingw32-make
 # 可执行文件生成在 release/LockBoardTester.exe
 ```
 
+## 打包和发布
+
+### Windows 平台
+
+#### 标准打包（带依赖文件夹）
+```batch
+# 自动编译并使用 windeployqt 收集依赖
+scripts\build-windows-single.bat 1.0.0
+
+# 输出目录: dist\
+# 包含: LockBoardTester.exe 及所有 Qt DLL 和插件
+```
+
+#### 单文件打包（可选）
+安装 [Enigma Virtual Box](https://enigmaprotector.com/en/downloads.html) 后：
+```batch
+scripts\build-windows-single.bat 1.0.0
+
+# 输出: LockBoardTester-1.0.0-standalone.exe (单文件，约 8-15 MB)
+```
+
+#### 启用压缩优化（可选）
+安装 [UPX](https://upx.github.io/) 后，脚本会自动压缩 DLL 文件，可减少约 40-60% 体积。
+
+### Linux 平台
+
+#### AppImage 打包（推荐）
+```bash
+# 基础打包
+./scripts/build-appimage.sh 1.0.0
+
+# 启用 UPX 压缩
+./scripts/build-appimage.sh 1.0.0 --compress
+
+# 输出: LockBoardTester-1.0.0-x86_64.AppImage
+```
+
+#### 查看帮助
+```bash
+./scripts/build-appimage.sh --help
+```
+
+### 跨平台统一打包
+
+使用统一脚本自动检测系统并调用对应平台的打包工具：
+
+```bash
+# 基础打包
+./scripts/build-all.sh --version 1.0.0
+
+# 启用压缩并清理旧文件
+./scripts/build-all.sh --version 1.0.0 --compress --clean
+
+# 查看帮助
+./scripts/build-all.sh --help
+```
+
+### ARM 平台交叉编译
+
+针对嵌入式 Linux 设备（树莓派、工控机等）：
+
+```bash
+# ARM 32位（树莓派 2/3/4 32位系统）
+./scripts/build-arm-cross.sh armv7l 1.0.0
+
+# ARM 64位（树莓派 3/4 64位系统、工控机）
+./scripts/build-arm-cross.sh aarch64 1.0.0
+
+# 静态链接版本（推荐，无需目标设备安装 Qt）
+./scripts/build-arm-cross.sh armv7l 1.0.0 --static
+
+# 输出: dist/LockBoardTester-1.0.0-linux-armv7l.tar.gz
+```
+
+**部署到目标设备**：
+```bash
+# 传输文件
+scp dist/LockBoardTester-*.tar.gz user@target:/tmp/
+
+# SSH 登录并安装
+ssh user@target
+cd /tmp && tar xzf LockBoardTester-*.tar.gz
+cd lockboard-*
+./run.sh
+```
+
+详细的 ARM 交叉编译指南，请参考：
+- [ARM 交叉编译文档](docs/arm-cross-compilation.md)
+
+### 输出文件说明
+
+| 平台 | 文件 | 大小 | 说明 |
+|------|------|------|------|
+| Windows | `dist/` 目录 | ~25-30 MB | 标准版本，包含所有依赖 |
+| Windows | `LockBoardTester-*-standalone.exe` | ~8-15 MB | 单文件版本（需 Enigma VB） |
+| Linux x86_64 | `LockBoardTester-*-x86_64.AppImage` | ~20-25 MB | 便携版本，无需安装 |
+| Linux ARM | `LockBoardTester-*-linux-armv7l.tar.gz` | ~15-20 MB | ARM 32位交叉编译版本 |
+| Linux ARM | `LockBoardTester-*-linux-aarch64.tar.gz` | ~15-20 MB | ARM 64位交叉编译版本 |
+
+### 打包工具配置
+
+详细的打包工具安装和配置指南，请参考：
+- [打包工具配置文档](docs/packaging-setup.md)
+- [ARM 交叉编译配置](docs/arm-cross-compilation.md)
+
 ## 技术支持
 
 如有问题，请检查：

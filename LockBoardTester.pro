@@ -4,6 +4,10 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++11
 
+# 版本信息
+VERSION = 1.0.0
+DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
@@ -37,10 +41,32 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
+# 编译优化选项
+CONFIG(release, debug|release) {
+    # Release 模式优化
+    QMAKE_CXXFLAGS_RELEASE -= -O2
+    QMAKE_CXXFLAGS_RELEASE += -O3
+    
+    # 去除调试符号
+    QMAKE_LFLAGS_RELEASE += -s
+    
+    # Windows 平台禁用控制台窗口
+    win32: CONFIG += windows
+}
+
 # Windows 平台配置
 win32 {
     # Windows 可执行文件保持在 release 目录
     DESTDIR = release
+    
+    # 应用程序图标（需要创建 resources/app.rc）
+    RC_ICONS = resources/lockboard.ico
+    
+    # 版本信息
+    QMAKE_TARGET_COMPANY = "LockBoard Project"
+    QMAKE_TARGET_PRODUCT = "LockBoard Tester"
+    QMAKE_TARGET_DESCRIPTION = "RS485 Lock Control Board Communication Tester"
+    QMAKE_TARGET_COPYRIGHT = "Copyright 2026"
 }
 
 # Linux 平台配置

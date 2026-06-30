@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<State>
+  <InputFile>%INPUT_EXE%</InputFile>
+  <OutputFile>%OUTPUT_EXE%</OutputFile>
+  <Compression>1</Compression>
+  <Options>
+    <ShareVirtualSystem>0</ShareVirtualSystem>
+    <MapExecutableWithTemporaryFile>1</MapExecutableWithTemporaryFile>
+    <AllowRunningOfVirtualExeFiles>0</AllowRunningOfVirtualExeFiles>
+    <CompressFiles>1</CompressFiles>
+    <DeleteExtractedOnExit>1</DeleteExtractedOnExit>
+  </Options>
+  <Files>
+    <!-- Qt Core Libraries -->
+    <File>
+      <Type>3</Type>
+      <Name>Qt5Core.dll</Name>
+      <File>%DIST_DIR%\Qt5Core.dll</File>
+    </File>
+    <File>
+      <Type>3</Type>
+      <Name>Qt5Gui.dll</Name>
+      <File>%DIST_DIR%\Qt5Gui.dll</File>
+    </File>
+    <File>
+      <Type>3</Type>
+      <Name>Qt5Widgets.dll</Name>
+      <File>%DIST_DIR%\Qt5Widgets.dll</File>
+    </File>
+    <File>
+      <Type>3</Type>
+      <Name>Qt5SerialPort.dll</Name>
+      <File>%DIST_DIR%\Qt5SerialPort.dll</File>
+    </File>
+    
+    <!-- Platforms Plugin (Required) -->
+    <File>
+      <Type>3</Type>
+      <Name>platforms\qwindows.dll</Name>
+      <File>%DIST_DIR%\platforms\qwindows.dll</File>
+    </File>
+    
+    <!-- Styles Plugin (Optional but recommended) -->
+    <File>
+      <Type>3</Type>
+      <Name>styles\qwindowsvistastyle.dll</Name>
+      <File>%DIST_DIR%\styles\qwindowsvistastyle.dll</File>
+    </File>
+    
+    <!-- Additional DLLs (will be added dynamically by script) -->
+    <!-- %ADDITIONAL_DLLS% -->
+  </Files>
+  <Registries/>
+</State>

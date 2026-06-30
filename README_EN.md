@@ -242,6 +242,111 @@ mingw32-make
 # Executable generated at release/LockBoardTester.exe
 ```
 
+## Packaging and Distribution
+
+### Windows Platform
+
+#### Standard Packaging (with dependency folder)
+```batch
+# Auto-compile and collect dependencies using windeployqt
+scripts\build-windows-single.bat 1.0.0
+
+# Output directory: dist\
+# Contains: LockBoardTester.exe with all Qt DLLs and plugins
+```
+
+#### Single-File Packaging (Optional)
+After installing [Enigma Virtual Box](https://enigmaprotector.com/en/downloads.html):
+```batch
+scripts\build-windows-single.bat 1.0.0
+
+# Output: LockBoardTester-1.0.0-standalone.exe (single file, ~8-15 MB)
+```
+
+#### Enable Compression (Optional)
+After installing [UPX](https://upx.github.io/), the script will automatically compress DLL files, reducing size by ~40-60%.
+
+### Linux Platform
+
+#### AppImage Packaging (Recommended)
+```bash
+# Basic packaging
+./scripts/build-appimage.sh 1.0.0
+
+# Enable UPX compression
+./scripts/build-appimage.sh 1.0.0 --compress
+
+# Output: LockBoardTester-1.0.0-x86_64.AppImage
+```
+
+#### View Help
+```bash
+./scripts/build-appimage.sh --help
+```
+
+### Cross-Platform Unified Packaging
+
+Use unified script to auto-detect system and invoke corresponding platform packaging tool:
+
+```bash
+# Basic packaging
+./scripts/build-all.sh --version 1.0.0
+
+# Enable compression and clean old files
+./scripts/build-all.sh --version 1.0.0 --compress --clean
+
+# View help
+./scripts/build-all.sh --help
+```
+
+### ARM Platform Cross-Compilation
+
+For embedded Linux devices (Raspberry Pi, industrial PCs, etc.):
+
+```bash
+# ARM 32-bit (Raspberry Pi 2/3/4 with 32-bit OS)
+./scripts/build-arm-cross.sh armv7l 1.0.0
+
+# ARM 64-bit (Raspberry Pi 3/4 with 64-bit OS, industrial PCs)
+./scripts/build-arm-cross.sh aarch64 1.0.0
+
+# Static linking version (recommended, no Qt required on target device)
+./scripts/build-arm-cross.sh armv7l 1.0.0 --static
+
+# Output: dist/LockBoardTester-1.0.0-linux-armv7l.tar.gz
+```
+
+**Deploy to Target Device**:
+```bash
+# Transfer file
+scp dist/LockBoardTester-*.tar.gz user@target:/tmp/
+
+# SSH login and install
+ssh user@target
+cd /tmp && tar xzf LockBoardTester-*.tar.gz
+cd lockboard-*
+./run.sh
+```
+
+For detailed ARM cross-compilation guide, see:
+- [ARM Cross-Compilation Documentation](docs/arm-cross-compilation.md)
+
+### Output Files Description
+
+| Platform | File | Size | Description |
+|----------|------|------|-------------|
+| Windows | `dist/` directory | ~25-30 MB | Standard version with all dependencies |
+| Windows | `LockBoardTester-*-standalone.exe` | ~8-15 MB | Single-file version (requires Enigma VB) |
+| Linux x86_64 | `LockBoardTester-*-x86_64.AppImage` | ~20-25 MB | Portable version, no installation needed |
+| Linux ARM | `LockBoardTester-*-linux-armv7l.tar.gz` | ~15-20 MB | ARM 32-bit cross-compiled version |
+| Linux ARM | `LockBoardTester-*-linux-aarch64.tar.gz` | ~15-20 MB | ARM 64-bit cross-compiled version |
+
+### Packaging Tools Setup
+
+For detailed packaging tool installation and configuration guide, see:
+- [Packaging Setup Documentation](docs/packaging-setup.md)
+- [ARM Cross-Compilation Setup](docs/arm-cross-compilation.md)
+
 ## Technical Support
 
 If you encounter issues, check:

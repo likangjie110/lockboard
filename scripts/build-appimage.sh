@@ -3,10 +3,46 @@
 ################################################################################
 # LockBoardTester AppImage 构建脚本
 # 功能：自动构建可移植的 Linux AppImage 包
-# 依赖：Qt 5.15+, linuxdeployqt
+# 依赖：Qt 5.15+, linuxdeployqt, 可选 UPX
+# 用法：./build-appimage.sh [VERSION] [--compress] [--help]
 ################################################################################
 
 set -e  # 遇到错误立即退出
+
+# 默认版本号
+DEFAULT_VERSION="1.0.0"
+VERSION="$DEFAULT_VERSION"
+USE_COMPRESS=false
+
+# 解析命令行参数
+for arg in "$@"; do
+    case $arg in
+        --compress)
+            USE_COMPRESS=true
+            ;;
+        --help|-h)
+            echo "用法: $0 [VERSION] [--compress] [--help]"
+            echo ""
+            echo "参数："
+            echo "  VERSION       指定版本号（默认: $DEFAULT_VERSION）"
+            echo "  --compress    使用 UPX 压缩可执行文件和库（需要安装 UPX）"
+            echo "  --help, -h    显示此帮助信息"
+            echo ""
+            echo "示例："
+            echo "  $0                    # 使用默认版本 $DEFAULT_VERSION"
+            echo "  $0 2.0.1              # 指定版本号"
+            echo "  $0 1.5.0 --compress   # 指定版本并启用压缩"
+            echo ""
+            exit 0
+            ;;
+        *)
+            # 如果是数字开头，认为是版本号
+            if [[ $arg =~ ^[0-9] ]]; then
+                VERSION="$arg"
+            fi
+            ;;
+    esac
+done
 
 # 颜色定义
 RED='\033[0;31m'
@@ -45,6 +81,11 @@ check_command() {
 # 1. 环境检查
 ################################################################################
 print_info "开始检查构建环境..."
+print_info "版本号: $VERSION"
+if [ "$USE_COMPRESS" = true ]; then
+    print_info "压缩模式: 启用"
+fi
+echo
 
 # 检查 qmake
 if ! check_command qmake; then
@@ -56,6 +97,20 @@ fi
 if ! check_command make; then
     print_error "请安装 make 工具"
     exit 1
+fi
+
+# 检查可选工具 - UPX
+HAS_UPX=false
+if command -v upx &> /dev/null; then
+    HAS_UPX=true
+    UPX_VERSION=$(upx --version 2>&1 | head -n1)
+    print_info "检测到 UPX: $UPX_VERSION"
+fi
+
+if [ "$USE_COMPRESS" = true ] && [ "$HAS_UPX" = false ]; then
+    print_warning "启用了压缩选项但未找到 UPX，将跳过压缩"
+    print_warning "安装方法: sudo apt install upx-ucl (Debian/Ubuntu)"
+    USE_COMPRESS=false
 fi
 
 # 获取 Qt 版本
@@ -119,6 +174,28 @@ make -j$(nproc) || {
     exit 1
 }
 print_success "编译完成"
+
+################################################################################
+# 4.5. UPX 压缩可执行文件（可选）
+################################################################################
+if [ "$USE_COMPRESS" = true ]; then
+    print_info "使用 UPX 压缩可执行文件..."
+    
+    if [ -f "release/LockBoardTester" ]; then
+        ORIGINAL_SIZE=$(stat -c%s "release/LockBoardTester")
+        upx --best --lzma "release/LockBoardTester" 2>&1 | grep -v "^upx:" || true
+        COMPRESSED_SIZE=$(stat -c%s "release/LockBoardTester")
+        RATIO=$(echo "scale=1; 100 - ($COMPRESSED_SIZE * 100 / $ORIGINAL_SIZE)" | bc)
+        print_success "压缩完成，减少了 ${RATIO}% 大小"
+    elif [ -f "LockBoardTester" ]; then
+        ORIGINAL_SIZE=$(stat -c%s "LockBoardTester")
+        upx --best --lzma "LockBoardTester" 2>&1 | grep -v "^upx:" || true
+        COMPRESSED_SIZE=$(stat -c%s "LockBoardTester")
+        RATIO=$(echo "scale=1; 100 - ($COMPRESSED_SIZE * 100 / $ORIGINAL_SIZE)" | bc)
+        print_success "压缩完成，减少了 ${RATIO}% 大小"
+    fi
+    echo
+fi
 
 ################################################################################
 # 5. 创建 AppDir 目录结构
@@ -234,7 +311,6 @@ fi
 
 if [ -n "$APPIMAGE_FILE" ]; then
     # 添加版本号和架构信息
-    VERSION="1.0.0"
     ARCH=$(uname -m)
     NEW_NAME="LockBoardTester-${VERSION}-${ARCH}.AppImage"
     
@@ -246,6 +322,11 @@ if [ -n "$APPIMAGE_FILE" ]; then
     print_success "================================"
     print_info "文件位置: $PROJECT_ROOT/$NEW_NAME"
     print_info "文件大小: $(du -h "$NEW_NAME" | cut -f1)"
+    
+    if [ "$USE_COMPRESS" = true ]; then
+        print_info "已启用 UPX 压缩优化"
+    fi
+    
     print_info ""
     print_info "运行方式："
     print_info "  chmod +x $NEW_NAME"
