@@ -75,31 +75,22 @@ jobs:
           version: '5.15.2'
           arch: ${{ matrix.config.qt_arch }}
           cache: true
+          tools: 'tools_mingw,qt.tools.win64_mingw810,1.0-0-202006261533 tools_mingw,qt.tools.win32_mingw810,1.0-0-202006261533'
 
       # ===== Windows 构建 =====
       - name: Build Windows
         if: runner.os == 'Windows'
         run: |
-          # 设置 PATH，确保使用 Qt 自带的 MinGW 而不是系统 MinGW
-          $QtPath = (Get-Item env:Qt5_DIR).Value
-          $QtBin = Join-Path $QtPath "bin"
+          # 显示当前PATH，用于调试
+          Write-Host "=== Current PATH ==="
+          $env:PATH -split ';' | Select-Object -First 10
           
-          # 查找 Qt Tools 中的 MinGW
-          $QtRoot = Split-Path (Split-Path $QtPath -Parent) -Parent
-          if ("${{ matrix.config.qt_arch }}" -eq "win64_mingw81") {
-            $MinGW = Join-Path $QtRoot "Tools\mingw810_64\bin"
-          } else {
-            $MinGW = Join-Path $QtRoot "Tools\mingw810_32\bin"
-          }
-          
-          # 优先使用 Qt 的 MinGW
-          $env:PATH = "$MinGW;$QtBin;$env:PATH"
-          
-          Write-Host "Qt Path: $QtPath"
-          Write-Host "MinGW Path: $MinGW"
-          Write-Host "=== Tool versions ==="
+          # 显示工具版本
+          Write-Host "=== Tool Versions ==="
           qmake -v
-          g++ --version
+          where.exe qmake
+          where.exe g++
+          g++ --version | Select-Object -First 1
           
           # 编译
           qmake LockBoardTester.pro CONFIG+=release
